@@ -1,6 +1,9 @@
-const express = require("express");
-const dotenv = require("dotenv");
-const connectDB = require("./config/db");
+const express = require('express');
+const dotenv = require('dotenv');
+const connectDB = require('./config/db');
+
+const authRoutes = require('./routes/authRoute');
+const walletRoutes = require('./routes/walletRoute');
 
 dotenv.config();
 connectDB();
@@ -8,7 +11,9 @@ connectDB();
 const app = express();
 app.use(express.json());
 
-app.use("/api/auth", require("./routes/auth"));
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/wallet', walletRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
