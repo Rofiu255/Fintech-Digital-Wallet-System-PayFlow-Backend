@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require('./db');
@@ -77,10 +76,13 @@ app.post('/api/wallet/transfer', authMiddleware, async (req, res) => {
     if (!recipientEmail || !amount) return res.status(400).json({ msg: 'Missing fields' });
 
     const senderWallet = await Wallet.findOne({ userId: req.userId });
+    if (!senderWallet) return res.status(404).json({ msg: 'Sender wallet not found' });
+
     const recipientUser = await User.findOne({ email: recipientEmail });
     if (!recipientUser) return res.status(404).json({ msg: 'Recipient not found' });
 
     const recipientWallet = await Wallet.findOne({ userId: recipientUser._id });
+    if (!recipientWallet) return res.status(404).json({ msg: 'Recipient wallet not found' });
 
     if (senderWallet.balance < amount) {
       return res.status(400).json({ msg: 'Insufficient balance' });
@@ -99,6 +101,34 @@ app.post('/api/wallet/transfer', authMiddleware, async (req, res) => {
     });
 
     res.status(200).json({ msg: 'Transfer successful' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get Wallet Balance
+app.get('/api/wallet/balance', authMiddleware, async (req, res) => {
+  try {
+    const wallet = await Wallet.findOne({ userId: req.userId });
+    if (!wallet) return res.status(404).json({ msg: 'Wallet not found' });
+
+    res.status(200).json({ balance: wallet.balance });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get Transaction History
+app.get('/api/wallet/transactions', authMiddleware, async (req, res) => {
+  try {
+    const transactions = await Transaction.find({
+      $or: [{ fromUser: req.userId }, { toUser: req.userId }]
+    })
+      .sort({ timestamp: -1 })
+      .populate('fromUser', 'email name')
+      .populate('toUser', 'email name');
+
+    res.status(200).json({ transactions });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
