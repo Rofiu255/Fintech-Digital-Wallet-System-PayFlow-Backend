@@ -28,3 +28,16 @@ Milestone 2: Money Transfers
 3. Validate balances before transfers.
 
 
+
+
+
+Milestone 3: Wallet & Transaction History
+
+
+1. GET endpoint for viewing wallet balance.
+
+
+2. GET endpoint to list past transactions.
+
+
+3. Ensure authentication middleware is applied.
